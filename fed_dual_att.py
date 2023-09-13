@@ -151,12 +151,12 @@ if __name__ == '__main__':
         local_weights, local_losses = defaultdict(list), defaultdict(list)
         # print(f'\n Global Training Round: {epoch+1}|\n')
 
-        m = max(int(args.frac * args.bs), 1)
-        cell_idx = random.sample(selected_cells, m)
+        m = max(int(args.frac * args.bs), 1) 
+        cell_idx = random.sample(selected_cells, m) # random set
 
         avg_loss = 0
-        for cell in cell_idx:
-            group_id = df.loc[cell]['label']
+        for cell in cell_idx: 
+            group_id = df.loc[cell]['label'] 
             # print('Group ID:', group_id)
             global_model.load_state_dict(global_weights)
 
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
             local_weights[group_id].append(copy.deepcopy(w))
             local_losses[group_id].append(copy.deepcopy(loss))
-
+        # warm_weights 始终是不变的
         # Update global model
         local_cluster = defaultdict()
         for group_id in local_weights.keys():

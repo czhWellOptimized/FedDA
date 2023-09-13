@@ -217,7 +217,7 @@ def get_cluster_label(args, df_traffic, lng, lat):
                 # print('Geolocation clustering converges at {:}-th iteration'.format(i+1))
                 break
             else:
-                df_ori['label'] = km_tp.labels_
+                df_ori['label'] = km_tp.labels_ # 这一步是因为，这样就可以认为，我们在使用地理位置模式下，将流量特征也考虑进来了。
                 loc_init = df_ori.groupby(['label']).mean()[['lng', 'lat']].values
                 geo_old_label = km_geo.labels_
         elif args.pattern == 'tp':
@@ -427,8 +427,9 @@ def average_weights_att(w_clients, w_server, epsilon=1.0):
 
 def avg_dual_att(w_clients, w_server, warm_server, epsilon=1.0, rho=0.1):
     w_next = copy.deepcopy(w_server)
-    att = {}
-    att_warm = {}
+    att = {} # server 和 client 之间差距的att
+    att_warm = {} # server 和 warm_server 之间差距的att
+    # 设置两个att的目的就是想让server 尽可能接近每一轮epoch中client的weight 和 warm_server。
     for k in w_server.keys():
         w_next[k] = torch.zeros_like(w_server[k])
         att[k] = torch.zeros(len(w_clients))
@@ -436,7 +437,7 @@ def avg_dual_att(w_clients, w_server, warm_server, epsilon=1.0, rho=0.1):
     for k in w_next.keys():
         for i in range(0, len(w_clients)):
             att[k][i] = torch.from_numpy(np.array(linalg.norm(w_server[k].cpu() - w_clients[i][k].cpu())))
-        sw_diff = w_server[k].cpu() - warm_server[k].cpu()
+        sw_diff = w_server[k].cpu() - warm_server[k].cpu()  # server 和 warm_server的差距
         att_warm[k] = torch.FloatTensor(np.array(linalg.norm(sw_diff)))
 
     warm_tensor = torch.FloatTensor([v for k, v in att_warm.items()])
